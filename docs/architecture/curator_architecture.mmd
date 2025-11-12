@@ -1,0 +1,155 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#0066cc','primaryTextColor':'#fff','primaryBorderColor':'#004d99','lineColor':'#666','secondaryColor':'#4caf50','tertiaryColor':'#ff9800'}}}%%
+
+graph TB
+    %% Client Layer
+    subgraph Client["Client Layer"]
+        Web["Web App<br/>(Next.js 14)"]
+        Mobile["Mobile App<br/>(Future)"]
+    end
+
+    %% API Gateway
+    APIGateway["API Gateway<br/>(Express.js)<br/>Auth, Rate Limiting, CORS"]
+
+    %% Core Services
+    subgraph CoreServices["Core Services"]
+        direction TB
+
+        RecommendationEngine["Recommendation Engine"]
+        ContextEngine["Context Engine<br/>Time, Weather, Location"]
+        UserService["User Service<br/>Profiles, Preferences"]
+
+        subgraph RecEngine["Recommendation Pipeline"]
+            direction LR
+            IntentInterp["Intent Interpretation<br/>(Claude AI)"]
+            Embeddings["Embeddings Service<br/>(Vector Generation)"]
+            CandidateGen["Candidate Generation<br/>(Multi-Domain)"]
+            RankPack["Rank & Pack<br/>(Scoring, Diversity)"]
+        end
+
+        RecommendationEngine --> RecEngine
+    end
+
+    %% Domain Adapters
+    subgraph DomainAdapters["Domain Adapters"]
+        direction TB
+        MusicAdapter["Music Adapter<br/>(Spotify API)"]
+        NewsAdapter["News Adapter<br/>(News API)"]
+        RecipeAdapter["Recipe Adapter<br/>(Spoonacular)"]
+        LearningAdapter["Learning Adapter<br/>(Coursera, Udemy)"]
+        EventsAdapter["Events Adapter<br/>(Eventbrite)"]
+    end
+
+    %% Workers
+    subgraph Workers["Background Workers"]
+        direction TB
+        IngestionWorker["Ingestion Worker<br/>(Event Processing)"]
+        EmbeddingWorker["Embedding Worker<br/>(Batch Processing)"]
+        CacheWarmer["Cache Warmer<br/>(Pre-computation)"]
+    end
+
+    %% Storage Layer
+    subgraph Storage["Storage Layer"]
+        direction TB
+        Postgres[("PostgreSQL<br/>Users, Prefs,<br/>Events")]
+        VectorDB[("Vector DB<br/>(Pinecone/Weaviate)<br/>Embeddings")]
+        Redis[("Redis<br/>Cache, Sessions,<br/>Rate Limits")]
+    end
+
+    %% External Services
+    subgraph External["External Services"]
+        direction TB
+        AnthropicAPI["Anthropic Claude<br/>Intent → Features"]
+        WeatherAPI["Weather API"]
+        SpotifyAPI["Spotify API"]
+        NewsAPI["News API"]
+        OtherAPIs["Other Domain APIs"]
+    end
+
+    %% Observability
+    subgraph Observability["Observability & Ops"]
+        direction LR
+        OpenTelemetry["OpenTelemetry<br/>Traces, Metrics, Logs"]
+        FeatureFlags["Feature Flags<br/>(LaunchDarkly)"]
+        Monitoring["Monitoring<br/>(Datadog/Grafana)"]
+    end
+
+    %% Connections - Client to Gateway
+    Web -->|HTTPS| APIGateway
+    Mobile -.->|Future| APIGateway
+
+    %% Gateway to Services
+    APIGateway -->|/recommend| RecommendationEngine
+    APIGateway -->|/context| ContextEngine
+    APIGateway -->|/user| UserService
+    APIGateway -->|/events| IngestionWorker
+
+    %% Recommendation Engine Flow
+    RecommendationEngine --> IntentInterp
+    IntentInterp --> Embeddings
+    Embeddings --> CandidateGen
+    CandidateGen --> RankPack
+
+    %% Context Integration
+    ContextEngine -.->|Context Data| RankPack
+    UserService -.->|User Prefs| RankPack
+
+    %% Candidate Gen to Domain Adapters
+    CandidateGen --> MusicAdapter
+    CandidateGen --> NewsAdapter
+    CandidateGen --> RecipeAdapter
+    CandidateGen --> LearningAdapter
+    CandidateGen --> EventsAdapter
+
+    %% Domain Adapters to External APIs
+    MusicAdapter -->|OAuth| SpotifyAPI
+    NewsAdapter --> NewsAPI
+    RecipeAdapter --> OtherAPIs
+    LearningAdapter --> OtherAPIs
+    EventsAdapter --> OtherAPIs
+
+    %% Intent Interp to AI
+    IntentInterp -->|LLM Call| AnthropicAPI
+
+    %% Context Engine to Weather
+    ContextEngine --> WeatherAPI
+
+    %% Services to Storage
+    RecommendationEngine --> Redis
+    RecommendationEngine --> VectorDB
+    UserService --> Postgres
+    UserService --> Redis
+    IngestionWorker --> Postgres
+    EmbeddingWorker --> VectorDB
+    CacheWarmer --> Redis
+
+    %% Worker Triggers
+    IngestionWorker -.->|Async| EmbeddingWorker
+    EmbeddingWorker --> VectorDB
+
+    %% Observability Integration
+    APIGateway -.->|Telemetry| OpenTelemetry
+    RecommendationEngine -.->|Telemetry| OpenTelemetry
+    ContextEngine -.->|Telemetry| OpenTelemetry
+    UserService -.->|Telemetry| OpenTelemetry
+    IngestionWorker -.->|Telemetry| OpenTelemetry
+
+    OpenTelemetry --> Monitoring
+
+    FeatureFlags -.->|Config| RecommendationEngine
+    FeatureFlags -.->|Config| Web
+
+    %% Styling
+    classDef clientStyle fill:#0066cc,stroke:#004d99,stroke-width:2px,color:#fff
+    classDef serviceStyle fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
+    classDef workerStyle fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
+    classDef storageStyle fill:#9c27b0,stroke:#6a1b9a,stroke-width:3px,color:#fff
+    classDef externalStyle fill:#607d8b,stroke:#37474f,stroke-width:2px,color:#fff
+    classDef obsStyle fill:#795548,stroke:#4e342e,stroke-width:2px,color:#fff
+
+    class Web,Mobile clientStyle
+    class APIGateway,RecommendationEngine,ContextEngine,UserService,IntentInterp,Embeddings,CandidateGen,RankPack serviceStyle
+    class MusicAdapter,NewsAdapter,RecipeAdapter,LearningAdapter,EventsAdapter serviceStyle
+    class IngestionWorker,EmbeddingWorker,CacheWarmer workerStyle
+    class Postgres,VectorDB,Redis storageStyle
+    class AnthropicAPI,WeatherAPI,SpotifyAPI,NewsAPI,OtherAPIs externalStyle
+    class OpenTelemetry,FeatureFlags,Monitoring obsStyle

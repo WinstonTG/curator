@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check all packages
+        run: pnpm type-check
+        continue-on-error: false
+
+      - name: Lint all packages
+        run: pnpm lint
+        continue-on-error: false
+
+      - name: Run tests
+        run: pnpm test
+        continue-on-error: false
+
+      - name: Build all packages
+        run: pnpm build
+        continue-on-error: false
+
+      - name: Upload build artifacts
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            web/.next
+            scripts/dist
+            packages/*/dist
+          retention-days: 7
+
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        run: pnpm exec playwright test --reporter=line
+        continue-on-error: false
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  analytics-check:
+    name: Analytics & Metrics Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate synthetic events
+        run: pnpm generate:events
+        continue-on-error: true
+
+      - name: Run metrics integrity check
+        run: pnpm check:metrics
+        continue-on-error: false
+
+  status-check:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [build-and-test, e2e-tests, analytics-check]
+    if: always()
+
+    steps:
+      - name: Check build status
+        if: needs.build-and-test.result != 'success'
+        run: |
+          echo "Build and test job failed"
+          exit 1
+
+      - name: Check e2e status
+        if: needs.e2e-tests.result != 'success'
+        run: |
+          echo "E2E tests failed"
+          exit 1
+
+      - name: Check analytics status
+        if: needs.analytics-check.result != 'success'
+        run: |
+          echo "Analytics validation failed"
+          exit 1
+
+      - name: All checks passed
+        run: |
+          echo "All CI checks passed successfully"
