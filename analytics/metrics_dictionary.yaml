@@ -1,11 +1,45 @@
 # Curator Analytics Metrics Dictionary
-# Version: 0.1.0
+# Version: 1.0.0
 # Last Updated: 2025-01-12
 
 metadata:
-  version: "0.1.0"
+  version: "1.0.0"
   owner: "Product Analytics"
   review_cadence: "Bi-weekly"
+  changelog:
+    - version: "1.0.0"
+      date: "2025-01-12"
+      changes: "Added North Star metric, novelty-weighted engagement, sponsored utility"
+    - version: "0.1.0"
+      date: "2025-01-12"
+      changes: "Initial metrics dictionary"
+
+# ============================================================================
+# NORTH STAR METRIC
+# ============================================================================
+
+north_star:
+  name: "match_discovery_rate"
+  display_name: "Match Discovery Rate (MD/day)"
+  description: |
+    Average number of successful recommendations per active user per day.
+    A "match" is defined as a recommendation that results in user action (Save/Try/Attend/Buy).
+    This is our primary product health indicator.
+  formula: |
+    MD/day = (
+      COUNT(DISTINCT recommendation_id WHERE action_taken = TRUE) /
+      COUNT(DISTINCT user_id WHERE session_started) /
+      COUNT(DISTINCT DATE(timestamp))
+    )
+
+    WHERE action_taken IN ('item_saved', 'item_tried', 'item_purchased')
+  target: 3.0
+  critical_threshold: 1.5
+  unit: "matches/user/day"
+  owner: "Product Team"
+  dashboard_link: "/metrics#match-discovery-rate"
+  review_cadence: "Daily"
+  alert_channels: ["#product-alerts", "#analytics"]
 
 # ============================================================================
 # CORE EVENTS
@@ -39,6 +73,7 @@ events:
         description: "Environmental context (time_of_day, weather, location)"
     owner: "Analytics Team"
     frequency: "Per session start"
+    required_for_metrics: ["completion_rate", "match_discovery_rate"]
 
   - name: session_completed
     description: "User completes a full intent→action flow"
@@ -62,6 +97,7 @@ events:
         description: "Number of actions (save/try/etc.) taken"
     owner: "Analytics Team"
     frequency: "Per completed session"
+    required_for_metrics: ["completion_rate"]
 
   # Discovery Events
   - name: recommendation_viewed
@@ -93,8 +129,17 @@ events:
         type: string
         required: false
         description: "User's original intent query"
+      - name: is_novel
+        type: boolean
+        required: false
+        description: "Whether this is new content for the user"
+      - name: is_sponsored
+        type: boolean
+        required: false
+        description: "Whether this is a sponsored recommendation"
     owner: "Recommendations Team"
     frequency: "Per recommendation view"
+    required_for_metrics: ["engagement_conversion_rate", "novelty_engagement", "sponsored_utility"]
 
   # Action Events
   - name: item_saved
@@ -122,6 +167,7 @@ events:
         description: "Time from view to save in seconds"
     owner: "Product Team"
     frequency: "Per save action"
+    required_for_metrics: ["match_discovery_rate", "engagement_conversion_rate", "time_to_action"]
 
   - name: item_tried
     description: "User indicates they will try/use the recommendation"
@@ -147,6 +193,7 @@ events:
         required: true
     owner: "Product Team"
     frequency: "Per try action"
+    required_for_metrics: ["match_discovery_rate", "engagement_conversion_rate", "time_to_action"]
 
   - name: item_purchased
     description: "User purchases/registers for a recommendation (events, courses)"
@@ -176,6 +223,7 @@ events:
         description: "Purchase amount in USD"
     owner: "Product Team"
     frequency: "Per purchase action"
+    required_for_metrics: ["match_discovery_rate", "engagement_conversion_rate", "time_to_action"]
 
   # Error Events
   - name: error_occurred
@@ -203,70 +251,263 @@ events:
         required: true
     owner: "Engineering Team"
     frequency: "Per error occurrence"
+    required_for_metrics: ["error_rate"]
 
 # ============================================================================
-# DERIVED METRICS (Calculated from events)
+# SUPPORTING METRICS
 # ============================================================================
 
 metrics:
-  - name: match_discovery_rate
-    display_name: "Match Discovery Rate (MD/day)"
-    description: "Average successful recommendations per active user per day"
-    calculation: |
-      COUNT(DISTINCT recommendation_id WHERE action_taken) /
-      COUNT(DISTINCT user_id) /
-      COUNT(DISTINCT DATE(timestamp))
-    events_used: ["recommendation_viewed", "item_saved", "item_tried", "item_purchased"]
-    target: 3.0
+  # Engagement Metrics
+  - name: save_rate
+    display_name: "Save Rate"
+    description: "Percentage of viewed recommendations that users save"
+    formula: |
+      Save Rate = (
+        COUNT(item_saved) /
+        COUNT(recommendation_viewed)
+      ) * 100
+    sql_query: |
+      SELECT
+        DATE(timestamp) as date,
+        (COUNT(CASE WHEN event = 'item_saved' THEN 1 END)::FLOAT /
+         COUNT(CASE WHEN event = 'recommendation_viewed' THEN 1 END)) * 100 as save_rate
+      FROM events
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+      GROUP BY DATE(timestamp)
+    target: 15.0
+    unit: "percent"
     owner: "Product Team"
+    dashboard_link: "/metrics#engagement-conversion"
     review_cadence: "Daily"
 
-  - name: engagement_conversion_rate
-    display_name: "Engagement Conversion Rate"
-    description: "Percentage of viewed recommendations that result in an action"
-    calculation: |
-      (COUNT(item_saved) + COUNT(item_tried) + COUNT(item_purchased)) /
-      COUNT(recommendation_viewed) * 100
-    events_used: ["recommendation_viewed", "item_saved", "item_tried", "item_purchased"]
-    target_save: 15.0
-    target_action: 5.0
+  - name: try_rate
+    display_name: "Try Rate"
+    description: "Percentage of viewed recommendations that users try"
+    formula: |
+      Try Rate = (
+        COUNT(item_tried) /
+        COUNT(recommendation_viewed)
+      ) * 100
+    sql_query: |
+      SELECT
+        DATE(timestamp) as date,
+        (COUNT(CASE WHEN event = 'item_tried' THEN 1 END)::FLOAT /
+         COUNT(CASE WHEN event = 'recommendation_viewed' THEN 1 END)) * 100 as try_rate
+      FROM events
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+      GROUP BY DATE(timestamp)
+    target: 5.0
+    unit: "percent"
     owner: "Product Team"
+    dashboard_link: "/metrics#engagement-conversion"
     review_cadence: "Daily"
 
+  - name: purchase_rate
+    display_name: "Purchase/Attend Rate"
+    description: "Percentage of viewed recommendations that result in purchase or registration"
+    formula: |
+      Purchase Rate = (
+        COUNT(item_purchased WHERE domain IN ('learning', 'events')) /
+        COUNT(recommendation_viewed WHERE domain IN ('learning', 'events'))
+      ) * 100
+    sql_query: |
+      SELECT
+        DATE(timestamp) as date,
+        (COUNT(CASE WHEN event = 'item_purchased' THEN 1 END)::FLOAT /
+         COUNT(CASE WHEN event = 'recommendation_viewed' AND domain IN ('learning', 'events') THEN 1 END)) * 100 as purchase_rate
+      FROM events
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+        AND domain IN ('learning', 'events')
+      GROUP BY DATE(timestamp)
+    target: 2.0
+    unit: "percent"
+    owner: "Product Team"
+    dashboard_link: "/metrics#engagement-conversion"
+    review_cadence: "Weekly"
+
+  # Novelty & Discovery
+  - name: novelty_weighted_engagement
+    display_name: "Novelty-Weighted Engagement"
+    description: |
+      Engagement rate weighted by content novelty. Novel content gets 2x weight to
+      incentivize discovery over just showing familiar content.
+    formula: |
+      Novelty-Weighted Engagement = (
+        (COUNT(actions WHERE is_novel = TRUE) * 2.0 +
+         COUNT(actions WHERE is_novel = FALSE) * 1.0) /
+        (COUNT(views WHERE is_novel = TRUE) * 2.0 +
+         COUNT(views WHERE is_novel = FALSE) * 1.0)
+      ) * 100
+    sql_query: |
+      WITH weighted_views AS (
+        SELECT
+          CASE WHEN is_novel = TRUE THEN 2.0 ELSE 1.0 END as weight
+        FROM events
+        WHERE event = 'recommendation_viewed'
+          AND timestamp >= NOW() - INTERVAL '24 hours'
+      ),
+      weighted_actions AS (
+        SELECT
+          CASE WHEN is_novel = TRUE THEN 2.0 ELSE 1.0 END as weight
+        FROM events e
+        JOIN events v ON e.recommendation_id = v.recommendation_id
+        WHERE e.event IN ('item_saved', 'item_tried', 'item_purchased')
+          AND v.event = 'recommendation_viewed'
+          AND e.timestamp >= NOW() - INTERVAL '24 hours'
+      )
+      SELECT
+        (SUM(weighted_actions.weight) / SUM(weighted_views.weight)) * 100 as novelty_weighted_engagement
+      FROM weighted_views, weighted_actions
+    target: 18.0
+    unit: "percent"
+    owner: "Recommendations Team"
+    dashboard_link: "/metrics#novelty-discovery"
+    review_cadence: "Weekly"
+
+  # Time & Flow
   - name: time_to_action
     display_name: "Time to Action (TTA)"
-    description: "Median time from discovery to first action in seconds"
-    calculation: "MEDIAN(time_to_action_seconds)"
-    events_used: ["item_saved", "item_tried", "item_purchased"]
+    description: "Median time from viewing a recommendation to taking action"
+    formula: |
+      TTA = MEDIAN(time_to_action_seconds)
+      WHERE event IN ('item_saved', 'item_tried', 'item_purchased')
+    sql_query: |
+      SELECT
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY time_to_action_seconds) as median_tta
+      FROM events
+      WHERE event IN ('item_saved', 'item_tried', 'item_purchased')
+        AND timestamp >= NOW() - INTERVAL '24 hours'
     target: 120
     unit: "seconds"
     owner: "Product Team"
-    review_cadence: "Weekly"
+    dashboard_link: "/metrics#time-to-action"
+    review_cadence: "Daily"
 
   - name: completion_rate
     display_name: "Drop-off Completion Rate"
-    description: "Percentage of users completing intent→action flow"
-    calculation: |
-      COUNT(session_completed) /
-      COUNT(session_started) * 100
-    events_used: ["session_started", "session_completed"]
+    description: "Percentage of started sessions that complete the full intent→action flow"
+    formula: |
+      Completion Rate = (
+        COUNT(session_completed) /
+        COUNT(session_started)
+      ) * 100
+    sql_query: |
+      SELECT
+        DATE(timestamp) as date,
+        (COUNT(CASE WHEN event = 'session_completed' THEN 1 END)::FLOAT /
+         COUNT(CASE WHEN event = 'session_started' THEN 1 END)) * 100 as completion_rate
+      FROM events
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+      GROUP BY DATE(timestamp)
     target: 60.0
+    critical_threshold: 40.0
     unit: "percent"
     owner: "Product Team"
+    dashboard_link: "/metrics#completion-rate"
     review_cadence: "Daily"
+    alert_channels: ["#product-alerts"]
 
+  # Monetization & Quality
+  - name: sponsored_utility
+    display_name: "Sponsored Content Utility"
+    description: |
+      Engagement rate on sponsored recommendations vs. organic. Ensures sponsored content
+      is still valuable to users (target: >80% of organic engagement).
+    formula: |
+      Sponsored Utility = (
+        (COUNT(actions WHERE is_sponsored = TRUE) / COUNT(views WHERE is_sponsored = TRUE)) /
+        (COUNT(actions WHERE is_sponsored = FALSE) / COUNT(views WHERE is_sponsored = FALSE))
+      ) * 100
+    sql_query: |
+      WITH sponsored_rate AS (
+        SELECT
+          (COUNT(CASE WHEN e.event IN ('item_saved', 'item_tried', 'item_purchased') THEN 1 END)::FLOAT /
+           COUNT(CASE WHEN v.event = 'recommendation_viewed' THEN 1 END)) as rate
+        FROM events v
+        LEFT JOIN events e ON v.recommendation_id = e.recommendation_id AND e.event IN ('item_saved', 'item_tried', 'item_purchased')
+        WHERE v.is_sponsored = TRUE
+          AND v.timestamp >= NOW() - INTERVAL '24 hours'
+      ),
+      organic_rate AS (
+        SELECT
+          (COUNT(CASE WHEN e.event IN ('item_saved', 'item_tried', 'item_purchased') THEN 1 END)::FLOAT /
+           COUNT(CASE WHEN v.event = 'recommendation_viewed' THEN 1 END)) as rate
+        FROM events v
+        LEFT JOIN events e ON v.recommendation_id = e.recommendation_id AND e.event IN ('item_saved', 'item_tried', 'item_purchased')
+        WHERE v.is_sponsored = FALSE
+          AND v.timestamp >= NOW() - INTERVAL '24 hours'
+      )
+      SELECT
+        (sponsored_rate.rate / organic_rate.rate) * 100 as sponsored_utility
+      FROM sponsored_rate, organic_rate
+    target: 80.0
+    critical_threshold: 50.0
+    unit: "percent"
+    owner: "Monetization Team"
+    dashboard_link: "/metrics#sponsored-quality"
+    review_cadence: "Weekly"
+
+  # System Health
   - name: error_rate
     display_name: "Error Rate"
     description: "Percentage of requests resulting in errors"
-    calculation: |
-      COUNT(error_occurred) /
-      (COUNT(recommendation_viewed) + COUNT(error_occurred)) * 100
-    events_used: ["error_occurred", "recommendation_viewed"]
+    formula: |
+      Error Rate = (
+        COUNT(error_occurred) /
+        (COUNT(recommendation_viewed) + COUNT(error_occurred))
+      ) * 100
+    sql_query: |
+      SELECT
+        DATE(timestamp) as date,
+        (COUNT(CASE WHEN event = 'error_occurred' THEN 1 END)::FLOAT /
+         (COUNT(CASE WHEN event = 'recommendation_viewed' THEN 1 END) +
+          COUNT(CASE WHEN event = 'error_occurred' THEN 1 END))) * 100 as error_rate
+      FROM events
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+      GROUP BY DATE(timestamp)
     target: 1.0
-    threshold_critical: 5.0
+    critical_threshold: 5.0
     unit: "percent"
     owner: "Engineering Team"
+    dashboard_link: "/metrics#system-health"
     review_cadence: "Hourly"
+    alert_channels: ["#engineering-alerts", "#on-call"]
+
+# ============================================================================
+# METRIC DEPENDENCIES & VALIDATION RULES
+# ============================================================================
+
+validation_rules:
+  - rule_id: "north_star_not_zero"
+    description: "North Star metric must have non-zero value"
+    check: "match_discovery_rate > 0"
+    severity: "critical"
+
+  - rule_id: "required_events_present"
+    description: "All event types must be present in last 24h"
+    check: |
+      COUNT(DISTINCT event) >= 7
+      WHERE event IN (
+        'session_started', 'session_completed', 'recommendation_viewed',
+        'item_saved', 'item_tried', 'item_purchased', 'error_occurred'
+      )
+    severity: "critical"
+
+  - rule_id: "completion_rate_threshold"
+    description: "Completion rate must not drop below critical threshold"
+    check: "completion_rate >= 40.0"
+    severity: "critical"
+
+  - rule_id: "error_rate_threshold"
+    description: "Error rate must not exceed critical threshold"
+    check: "error_rate <= 5.0"
+    severity: "critical"
+
+  - rule_id: "engagement_positive"
+    description: "At least one engagement metric must be positive"
+    check: "save_rate > 0 OR try_rate > 0 OR purchase_rate > 0"
+    severity: "warning"
 
 # ============================================================================
 # IMPLEMENTATION NOTES

@@ -214,7 +214,7 @@ class EventGenerator {
     const fs = require('fs');
     const path = require('path');
 
-    const outputPath = path.join(process.cwd(), filename);
+    const outputPath = path.join(process.cwd(), '..', filename);
     fs.writeFileSync(outputPath, JSON.stringify(this.events, null, 2));
     console.log(`✅ Events exported to: ${outputPath}`);
   }

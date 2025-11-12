@@ -1,0 +1,157 @@
+name: Metrics Integrity Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'analytics/**'
+      - 'web/lib/analytics.ts'
+      - 'scripts/generate_synthetic_events.ts'
+      - '.github/workflows/metrics.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'analytics/**'
+
+jobs:
+  metrics-validation:
+    name: Validate Metrics Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate synthetic events
+        run: pnpm generate:events
+        continue-on-error: true
+        # Continue even if synthetic generation fails - guard has fallback
+
+      - name: Run metrics integrity check
+        run: pnpm check:metrics
+
+      - name: Upload metrics report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: metrics-integrity-report
+          path: |
+            synthetic_events.json
+          retention-days: 7
+
+  dictionary-snapshot:
+    name: Validate Dictionary Schema
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate YAML syntax
+        run: |
+          sudo apt-get install -y yamllint
+          yamllint analytics/metrics_dictionary.yaml
+
+      - name: Check dictionary version
+        run: |
+          VERSION=$(grep 'version:' analytics/metrics_dictionary.yaml | head -1 | awk '{print $2}' | tr -d '"')
+          echo "Metrics Dictionary Version: $VERSION"
+
+          if [ "$VERSION" = "null" ] || [ -z "$VERSION" ]; then
+            echo "❌ Dictionary version is missing or invalid"
+            exit 1
+          fi
+
+          echo "✅ Dictionary version: $VERSION"
+
+      - name: Verify North Star metric defined
+        run: |
+          if ! grep -q "north_star:" analytics/metrics_dictionary.yaml; then
+            echo "❌ North Star metric not defined in dictionary"
+            exit 1
+          fi
+
+          echo "✅ North Star metric is defined"
+
+      - name: Verify validation rules exist
+        run: |
+          if ! grep -q "validation_rules:" analytics/metrics_dictionary.yaml; then
+            echo "❌ Validation rules section missing"
+            exit 1
+          fi
+
+          RULE_COUNT=$(grep -c "rule_id:" analytics/metrics_dictionary.yaml || echo "0")
+          echo "✅ Found $RULE_COUNT validation rules"
+
+          if [ "$RULE_COUNT" -lt "3" ]; then
+            echo "⚠️  Warning: Only $RULE_COUNT validation rules defined (expected at least 3)"
+          fi
+
+  unit-tests:
+    name: Unit Tests for Guards
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run guard unit tests
+        run: |
+          cd analytics/guards
+          pnpm install
+          pnpm test
+
+  notification:
+    name: Report Status
+    runs-on: ubuntu-latest
+    needs: [metrics-validation, dictionary-snapshot, unit-tests]
+    if: failure()
+
+    steps:
+      - name: Report failure
+        run: |
+          echo "❌ Metrics integrity check failed"
+          echo "   Please review the validation results and fix any critical issues"
+          echo "   See job logs for details"
+          exit 1

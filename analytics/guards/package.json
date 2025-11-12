@@ -1,0 +1,18 @@
+{
+  "name": "@curator/analytics-guards",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}

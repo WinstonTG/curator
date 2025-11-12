@@ -11,11 +11,15 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
-    "type-check": "pnpm -r type-check"
+    "type-check": "pnpm -r type-check",
+    "check:metrics": "tsx analytics/guards/metric_integrity_check.ts",
+    "generate:events": "pnpm -F @curator/scripts generate-events"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "yaml": "^2.3.4"
   },
   "engines": {
     "node": ">=18.0.0",
