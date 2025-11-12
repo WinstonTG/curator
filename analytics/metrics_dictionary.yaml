@@ -1,0 +1,294 @@
+# Curator Analytics Metrics Dictionary
+# Version: 0.1.0
+# Last Updated: 2025-01-12
+
+metadata:
+  version: "0.1.0"
+  owner: "Product Analytics"
+  review_cadence: "Bi-weekly"
+
+# ============================================================================
+# CORE EVENTS
+# ============================================================================
+
+events:
+  # Session Events
+  - name: session_started
+    description: "User initiates a new session on the platform"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+        description: "Unique identifier for the user"
+      - name: session_id
+        type: string
+        required: true
+        description: "Unique identifier for this session"
+      - name: timestamp
+        type: datetime
+        required: true
+        description: "ISO 8601 timestamp of event"
+      - name: platform
+        type: enum
+        required: true
+        values: ["web", "mobile"]
+        description: "Platform type"
+      - name: context
+        type: object
+        required: false
+        description: "Environmental context (time_of_day, weather, location)"
+    owner: "Analytics Team"
+    frequency: "Per session start"
+
+  - name: session_completed
+    description: "User completes a full intent→action flow"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+      - name: session_id
+        type: string
+        required: true
+      - name: timestamp
+        type: datetime
+        required: true
+      - name: duration_seconds
+        type: integer
+        required: true
+        description: "Total session duration in seconds"
+      - name: actions_taken
+        type: integer
+        required: true
+        description: "Number of actions (save/try/etc.) taken"
+    owner: "Analytics Team"
+    frequency: "Per completed session"
+
+  # Discovery Events
+  - name: recommendation_viewed
+    description: "User views a recommendation"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+      - name: session_id
+        type: string
+        required: true
+      - name: recommendation_id
+        type: string
+        required: true
+        description: "Unique identifier for the recommendation"
+      - name: domain
+        type: enum
+        required: true
+        values: ["music", "news", "recipes", "learning", "events"]
+        description: "Content domain"
+      - name: rank
+        type: integer
+        required: true
+        description: "Position in recommendation list (1-indexed)"
+      - name: timestamp
+        type: datetime
+        required: true
+      - name: source_query
+        type: string
+        required: false
+        description: "User's original intent query"
+    owner: "Recommendations Team"
+    frequency: "Per recommendation view"
+
+  # Action Events
+  - name: item_saved
+    description: "User saves a recommendation for later"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+      - name: session_id
+        type: string
+        required: true
+      - name: recommendation_id
+        type: string
+        required: true
+      - name: domain
+        type: enum
+        required: true
+        values: ["music", "news", "recipes", "learning", "events"]
+      - name: timestamp
+        type: datetime
+        required: true
+      - name: time_to_action_seconds
+        type: integer
+        required: true
+        description: "Time from view to save in seconds"
+    owner: "Product Team"
+    frequency: "Per save action"
+
+  - name: item_tried
+    description: "User indicates they will try/use the recommendation"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+      - name: session_id
+        type: string
+        required: true
+      - name: recommendation_id
+        type: string
+        required: true
+      - name: domain
+        type: enum
+        required: true
+        values: ["music", "news", "recipes", "learning", "events"]
+      - name: timestamp
+        type: datetime
+        required: true
+      - name: time_to_action_seconds
+        type: integer
+        required: true
+    owner: "Product Team"
+    frequency: "Per try action"
+
+  - name: item_purchased
+    description: "User purchases/registers for a recommendation (events, courses)"
+    properties:
+      - name: user_id
+        type: string
+        required: true
+      - name: session_id
+        type: string
+        required: true
+      - name: recommendation_id
+        type: string
+        required: true
+      - name: domain
+        type: enum
+        required: true
+        values: ["learning", "events"]
+      - name: timestamp
+        type: datetime
+        required: true
+      - name: time_to_action_seconds
+        type: integer
+        required: true
+      - name: price_usd
+        type: float
+        required: false
+        description: "Purchase amount in USD"
+    owner: "Product Team"
+    frequency: "Per purchase action"
+
+  # Error Events
+  - name: error_occurred
+    description: "System error or failure"
+    properties:
+      - name: user_id
+        type: string
+        required: false
+      - name: session_id
+        type: string
+        required: false
+      - name: error_type
+        type: enum
+        required: true
+        values: ["api_failure", "timeout", "rate_limit", "validation_error", "unknown"]
+      - name: error_message
+        type: string
+        required: true
+      - name: domain
+        type: enum
+        required: false
+        values: ["music", "news", "recipes", "learning", "events"]
+      - name: timestamp
+        type: datetime
+        required: true
+    owner: "Engineering Team"
+    frequency: "Per error occurrence"
+
+# ============================================================================
+# DERIVED METRICS (Calculated from events)
+# ============================================================================
+
+metrics:
+  - name: match_discovery_rate
+    display_name: "Match Discovery Rate (MD/day)"
+    description: "Average successful recommendations per active user per day"
+    calculation: |
+      COUNT(DISTINCT recommendation_id WHERE action_taken) /
+      COUNT(DISTINCT user_id) /
+      COUNT(DISTINCT DATE(timestamp))
+    events_used: ["recommendation_viewed", "item_saved", "item_tried", "item_purchased"]
+    target: 3.0
+    owner: "Product Team"
+    review_cadence: "Daily"
+
+  - name: engagement_conversion_rate
+    display_name: "Engagement Conversion Rate"
+    description: "Percentage of viewed recommendations that result in an action"
+    calculation: |
+      (COUNT(item_saved) + COUNT(item_tried) + COUNT(item_purchased)) /
+      COUNT(recommendation_viewed) * 100
+    events_used: ["recommendation_viewed", "item_saved", "item_tried", "item_purchased"]
+    target_save: 15.0
+    target_action: 5.0
+    owner: "Product Team"
+    review_cadence: "Daily"
+
+  - name: time_to_action
+    display_name: "Time to Action (TTA)"
+    description: "Median time from discovery to first action in seconds"
+    calculation: "MEDIAN(time_to_action_seconds)"
+    events_used: ["item_saved", "item_tried", "item_purchased"]
+    target: 120
+    unit: "seconds"
+    owner: "Product Team"
+    review_cadence: "Weekly"
+
+  - name: completion_rate
+    display_name: "Drop-off Completion Rate"
+    description: "Percentage of users completing intent→action flow"
+    calculation: |
+      COUNT(session_completed) /
+      COUNT(session_started) * 100
+    events_used: ["session_started", "session_completed"]
+    target: 60.0
+    unit: "percent"
+    owner: "Product Team"
+    review_cadence: "Daily"
+
+  - name: error_rate
+    display_name: "Error Rate"
+    description: "Percentage of requests resulting in errors"
+    calculation: |
+      COUNT(error_occurred) /
+      (COUNT(recommendation_viewed) + COUNT(error_occurred)) * 100
+    events_used: ["error_occurred", "recommendation_viewed"]
+    target: 1.0
+    threshold_critical: 5.0
+    unit: "percent"
+    owner: "Engineering Team"
+    review_cadence: "Hourly"
+
+# ============================================================================
+# IMPLEMENTATION NOTES
+# ============================================================================
+
+implementation:
+  storage:
+    - provider: "PostgreSQL"
+      tables: ["events", "sessions", "users"]
+    - provider: "TimescaleDB (future)"
+      note: "For time-series analysis if scale requires"
+
+  ingestion:
+    - method: "HTTP POST"
+      endpoint: "/api/analytics/track"
+      rate_limit: "1000 req/min per user"
+
+  retention:
+    - raw_events: "90 days"
+    - aggregated_metrics: "2 years"
+
+  privacy:
+    - pii_fields: ["user_id"]
+    - anonymization: "Hash user_id for non-product analytics"
+    - gdpr_compliant: true

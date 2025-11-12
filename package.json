@@ -1,0 +1,24 @@
+{
+  "name": "curator-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "scripts"
+  ],
+  "scripts": {
+    "dev": "pnpm -F web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
