@@ -1,0 +1,28 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440002",
+  "domain": "news",
+  "title": "Breakthrough in AI Reasoning Models Announced",
+  "description": "Researchers unveil new AI architecture that improves logical reasoning capabilities by 40%",
+  "source": {
+    "name": "TechCrunch",
+    "id": "techcrunch_article_456def",
+    "url": "https://techcrunch.com/2025/01/12/ai-reasoning-breakthrough",
+    "reputation_score": 88
+  },
+  "topics": ["artificial intelligence", "machine learning", "research", "technology"],
+  "actions": ["save", "try"],
+  "sponsored": false,
+  "created_at": "2025-01-12T08:30:00Z",
+  "meta": {
+    "domain": "news",
+    "author": "Sarah Johnson",
+    "publication": "TechCrunch",
+    "published_at": "2025-01-12T08:00:00Z",
+    "category": "technology",
+    "bias": "center",
+    "credibility_tier": "verified",
+    "read_time_minutes": 5,
+    "image_url": "https://techcrunch.com/wp-content/uploads/2025/01/ai-reasoning.jpg",
+    "breaking": false
+  }
+}

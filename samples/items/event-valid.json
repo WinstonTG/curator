@@ -1,0 +1,42 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440005",
+  "domain": "events",
+  "title": "Tech Meetup: Building AI Products",
+  "description": "Join fellow builders to discuss challenges and best practices for shipping AI-powered products",
+  "source": {
+    "name": "Eventbrite",
+    "id": "eventbrite_event_xyz789",
+    "url": "https://www.eventbrite.com/e/ai-product-meetup",
+    "reputation_score": 85
+  },
+  "topics": ["artificial intelligence", "product management", "networking", "startups"],
+  "actions": ["save", "attend"],
+  "sponsored": false,
+  "created_at": "2025-01-05T12:00:00Z",
+  "meta": {
+    "domain": "events",
+    "organizer": "SF AI Product Community",
+    "type": "meetup",
+    "event_date": "2025-01-20T18:00:00Z",
+    "event_end_date": "2025-01-20T21:00:00Z",
+    "venue": "The Hub San Francisco",
+    "location": {
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "USA",
+      "address": "123 Market St, San Francisco, CA 94103",
+      "coordinates": {
+        "lat": 37.7749,
+        "lng": -122.4194
+      }
+    },
+    "price_range": {
+      "min": 0,
+      "max": 0
+    },
+    "tickets_available": true,
+    "capacity": 50,
+    "age_restriction": "18+",
+    "image_url": "https://img.evbuc.com/ai-meetup-banner.jpg"
+  }
+}

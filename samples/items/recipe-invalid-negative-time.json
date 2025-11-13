@@ -1,0 +1,24 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440003",
+  "domain": "recipes",
+  "title": "Quick Curry",
+  "source": {
+    "name": "AllRecipes",
+    "id": "ar_123"
+  },
+  "topics": ["curry"],
+  "actions": ["save"],
+  "sponsored": false,
+  "created_at": "2025-01-12T10:00:00Z",
+  "meta": {
+    "domain": "recipes",
+    "cuisine": ["thai"],
+    "dietary": [],
+    "difficulty": "beginner",
+    "prep_time_minutes": -10,
+    "cook_time_minutes": 15,
+    "total_time_minutes": 25,
+    "servings": 4,
+    "ingredients": ["curry paste"]
+  }
+}

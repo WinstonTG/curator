@@ -1,0 +1,26 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "domain": "music",
+  "title": "Chill Electronic Mix for Focus",
+  "description": "A curated playlist of ambient electronic music perfect for deep work and concentration",
+  "source": {
+    "name": "Spotify",
+    "id": "spotify_playlist_123abc",
+    "url": "https://open.spotify.com/playlist/123abc",
+    "reputation_score": 95
+  },
+  "topics": ["electronic", "ambient", "focus", "productivity"],
+  "actions": ["save", "try"],
+  "sponsored": false,
+  "created_at": "2025-01-12T10:00:00Z",
+  "meta": {
+    "domain": "music",
+    "spotify_id": "123abc",
+    "artists": ["Tycho", "Bonobo", "Emancipator"],
+    "duration_seconds": 3600,
+    "genres": ["electronic", "ambient", "chillout"],
+    "mood": ["calm", "focused", "uplifting"],
+    "popularity": 85,
+    "image_url": "https://i.scdn.co/image/ab67616d0000b273example"
+  }
+}

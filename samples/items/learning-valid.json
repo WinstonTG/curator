@@ -1,0 +1,33 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440004",
+  "domain": "learning",
+  "title": "Machine Learning Fundamentals",
+  "description": "Comprehensive introduction to machine learning concepts, algorithms, and practical applications",
+  "source": {
+    "name": "Coursera",
+    "id": "coursera_course_ml101",
+    "url": "https://www.coursera.org/learn/machine-learning-fundamentals",
+    "reputation_score": 97
+  },
+  "topics": ["machine learning", "data science", "python", "algorithms"],
+  "actions": ["save", "purchase"],
+  "sponsored": false,
+  "created_at": "2025-01-08T00:00:00Z",
+  "meta": {
+    "domain": "learning",
+    "instructor": "Dr. Andrew Ng",
+    "platform": "Coursera",
+    "type": "course",
+    "level": "beginner",
+    "duration": {
+      "hours": 40,
+      "weeks": 8
+    },
+    "skills": ["machine learning", "python", "data analysis", "model evaluation"],
+    "price_usd": 49,
+    "rating": 4.8,
+    "enrollments": 250000,
+    "certificate": true,
+    "image_url": "https://d3njjcbhbojbot.cloudfront.net/api/utilities/v1/imageproxy/ml-course.jpg"
+  }
+}
