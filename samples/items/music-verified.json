@@ -1,0 +1,24 @@
+{
+  "id": "music-001",
+  "domain": "music",
+  "title": "Midnight Dreams",
+  "description": "A captivating blend of electronic and indie pop with dreamy synths and introspective lyrics about urban nightlife.",
+  "url": "https://open.spotify.com/track/abc123",
+  "source": {
+    "name": "Spotify",
+    "url": "https://open.spotify.com",
+    "reputation_score": 95
+  },
+  "topics": ["electronic", "indie-pop", "synth"],
+  "published_at": "2025-01-05T00:00:00Z",
+  "sponsored": false,
+  "meta": {
+    "artists": ["Luna Echo", "The Midnight Collective"],
+    "album": "Neon Nights",
+    "duration_ms": 245000,
+    "release_date": "2025-01-05",
+    "genres": ["electronic", "indie pop", "synthpop"],
+    "popularity": 78,
+    "image_url": "https://example.com/album-cover.jpg"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "news-002",
+  "domain": "news",
+  "title": "You won't believe this one weird trick doctors hate!",
+  "description": "Click here now for limited time offer on health secrets. Earn $$$ fast with our revolutionary system!",
+  "url": "https://clickbait-news.com/article/123",
+  "source": {
+    "name": "clickbait-news.com",
+    "url": "https://clickbait-news.com",
+    "reputation_score": 40
+  },
+  "topics": ["health", "lifestyle"],
+  "published_at": "2025-01-13T09:00:00Z",
+  "sponsored": true,
+  "meta": {
+    "credibility_tier": "risky"
+  }
+}

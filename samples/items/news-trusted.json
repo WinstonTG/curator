@@ -1,0 +1,21 @@
+{
+  "id": "news-001",
+  "domain": "news",
+  "title": "Climate Scientists Report New Findings on Ocean Temperatures",
+  "description": "A comprehensive study by leading climate researchers reveals significant changes in ocean temperature patterns over the past decade, with implications for marine ecosystems and weather patterns.",
+  "url": "https://apnews.com/article/climate-ocean-temperatures",
+  "source": {
+    "name": "Associated Press",
+    "url": "https://apnews.com",
+    "reputation_score": 98
+  },
+  "topics": ["climate", "science", "environment", "ocean"],
+  "published_at": "2025-01-13T10:00:00Z",
+  "sponsored": false,
+  "meta": {
+    "author": "Jane Smith",
+    "credibility_tier": "trusted",
+    "bias_rating": "center",
+    "image_url": "https://example.com/climate.jpg"
+  }
+}

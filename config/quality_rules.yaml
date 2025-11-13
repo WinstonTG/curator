@@ -1,0 +1,320 @@
+# Content Quality Rules
+# Source reputation tiers, blocklists, and content filtering rules
+
+version: "1.0"
+last_updated: "2025-01-13"
+
+# ============================================
+# Source Reputation Tiers
+# ============================================
+# Score ranges: 0-100
+# - 90-100: Trusted (verified, authoritative)
+# - 70-89:  Verified (established, reliable)
+# - 50-69:  Unverified (unknown quality)
+# - 30-49:  Risky (questionable content)
+# - 0-29:   Blocked (misinformation, spam)
+
+reputation:
+  # Music Sources
+  music:
+    trusted:
+      - source: "Spotify"
+        score: 95
+        reason: "Official music streaming platform with content verification"
+      - source: "Apple Music"
+        score: 95
+        reason: "Official music streaming platform"
+      - source: "SoundCloud"
+        score: 80
+        reason: "User-generated content with moderation"
+
+    verified:
+      - source: "Bandcamp"
+        score: 75
+        reason: "Artist-focused platform with quality curation"
+
+    blocked:
+      - source: "music-spam-site.com"
+        reason: "Known for automated spam content"
+
+  # News Sources
+  news:
+    trusted:
+      - source: "Associated Press"
+        score: 98
+        credibility: "trusted"
+        bias: "center"
+        reason: "Wire service with rigorous fact-checking"
+      - source: "Reuters"
+        score: 98
+        credibility: "trusted"
+        bias: "center"
+        reason: "International news agency with high standards"
+      - source: "BBC News"
+        score: 95
+        credibility: "trusted"
+        bias: "center-left"
+        reason: "Public broadcaster with editorial independence"
+      - source: "NPR"
+        score: 93
+        credibility: "trusted"
+        bias: "center-left"
+        reason: "Non-profit news organization"
+
+    verified:
+      - source: "The Guardian"
+        score: 88
+        credibility: "verified"
+        bias: "left"
+        reason: "Established newspaper with transparency"
+      - source: "Wall Street Journal"
+        score: 88
+        credibility: "verified"
+        bias: "center-right"
+        reason: "Business-focused newspaper"
+      - source: "TechCrunch"
+        score: 80
+        credibility: "verified"
+        bias: "center"
+        reason: "Technology news site"
+      - source: "The Verge"
+        score: 78
+        credibility: "verified"
+        bias: "center"
+        reason: "Technology and culture news"
+
+    risky:
+      - source: "clickbait-news.com"
+        score: 40
+        reason: "Known for sensationalist headlines"
+
+    blocked:
+      - source: "fake-news-site.com"
+        reason: "Repeatedly published misinformation"
+      - source: "conspiracy-today.com"
+        reason: "Promotes unverified conspiracy theories"
+
+  # Recipe Sources
+  recipes:
+    trusted:
+      - source: "Serious Eats"
+        score: 95
+        reason: "Recipe testing and culinary expertise"
+      - source: "King Arthur Baking"
+        score: 93
+        reason: "Professional baking resource"
+      - source: "America's Test Kitchen"
+        score: 95
+        reason: "Rigorous recipe testing methodology"
+
+    verified:
+      - source: "AllRecipes"
+        score: 80
+        reason: "Large community with user reviews"
+      - source: "Food Network"
+        score: 82
+        reason: "Professional chefs and testing"
+      - source: "Spoonacular"
+        score: 75
+        reason: "Recipe aggregator with API"
+
+    blocked:
+      - source: "recipe-scraper-spam.com"
+        reason: "Automated content scraping without attribution"
+
+  # Learning Sources
+  learning:
+    trusted:
+      - source: "MIT OpenCourseWare"
+        score: 100
+        reason: "Academic institution with peer review"
+      - source: "Stanford Online"
+        score: 100
+        reason: "University-backed online education"
+      - source: "Coursera"
+        score: 92
+        reason: "University partnerships and verified instructors"
+      - source: "edX"
+        score: 92
+        reason: "Non-profit with university content"
+
+    verified:
+      - source: "Khan Academy"
+        score: 88
+        reason: "Non-profit educational organization"
+      - source: "Udemy"
+        score: 75
+        reason: "Marketplace with instructor reviews"
+      - source: "YouTube"
+        score: 70
+        reason: "User-generated content, variable quality"
+
+    blocked:
+      - source: "diploma-mill.com"
+        reason: "Offers credentials without proper accreditation"
+
+  # Event Sources
+  events:
+    trusted:
+      - source: "Eventbrite"
+        score: 85
+        reason: "Established event platform with verification"
+      - source: "Meetup"
+        score: 82
+        reason: "Community-focused with moderation"
+
+    verified:
+      - source: "Facebook Events"
+        score: 70
+        reason: "Large platform with variable quality"
+      - source: "Ticketmaster"
+        score: 88
+        reason: "Official ticketing with venue partnerships"
+
+    blocked:
+      - source: "scam-tickets.com"
+        reason: "Known for fraudulent ticket sales"
+
+# ============================================
+# Content Filtering Rules
+# ============================================
+
+filters:
+  # Minimum reputation score required
+  min_reputation_score: 30
+
+  # Domain-specific filters
+  news:
+    # Require source credibility for health/medical topics
+    health_topics_min_credibility: "verified"
+
+    # Block sources without author attribution
+    require_author_for_investigative: true
+
+    # Maximum age for breaking news (hours)
+    breaking_news_max_age_hours: 24
+
+  recipes:
+    # Minimum number of reviews for user-submitted recipes
+    min_reviews_for_user_content: 5
+
+    # Require nutrition info for diet-specific recipes
+    require_nutrition_for_diet_recipes: true
+
+  learning:
+    # Minimum instructor rating
+    min_instructor_rating: 3.5
+
+    # Require certificate verification for professional courses
+    verify_certificates_for_professional: true
+
+  events:
+    # Require verified organizer for large events
+    large_event_capacity_threshold: 500
+    require_verified_organizer_for_large: true
+
+# ============================================
+# Keyword Blocklists
+# ============================================
+
+blocklists:
+  # Spam indicators (across all domains)
+  spam_keywords:
+    - "click here now"
+    - "limited time offer"
+    - "you won't believe"
+    - "doctors hate this"
+    - "one weird trick"
+    - "earn $$$ fast"
+    - "get rich quick"
+
+  # Sensitive content (requires manual review)
+  sensitive_topics:
+    - "cryptocurrency investment"
+    - "medical diagnosis"
+    - "legal advice"
+    - "financial advice"
+
+  # Domain-specific blocklists
+  news:
+    - "fake news"
+    - "alternative facts"
+    - "mainstream media lies"
+
+  recipes:
+    - "miracle diet"
+    - "detox cleanse"
+    - "lose weight fast"
+
+  learning:
+    - "get certified in 1 day"
+    - "no experience needed certification"
+
+# ============================================
+# Allowlists (bypass filters)
+# ============================================
+
+allowlists:
+  # Domains that always pass (emergency exceptions)
+  trusted_domains:
+    - "wikipedia.org"
+    - "github.com"
+    - "stackoverflow.com"
+
+  # Verified content creators
+  verified_creators:
+    music:
+      - "Spotify Editorial"
+      - "Apple Music Editors"
+
+    news:
+      - "AP News"
+      - "Reuters Editorial"
+
+    recipes:
+      - "J. Kenji López-Alt"
+      - "Samin Nosrat"
+
+    learning:
+      - "Andrew Ng"
+      - "3Blue1Brown"
+
+# ============================================
+# Quality Thresholds
+# ============================================
+
+thresholds:
+  # Minimum scores to pass filters
+  ingest:
+    min_reputation: 50
+    min_content_quality: 40
+
+  ranking:
+    min_reputation: 60
+    min_content_quality: 50
+
+  featured:
+    min_reputation: 80
+    min_content_quality: 70
+
+# ============================================
+# Violation Actions
+# ============================================
+
+actions:
+  # What to do when rules are violated
+  low_reputation:
+    action: "flag"
+    notify: true
+
+  blocked_source:
+    action: "reject"
+    log: true
+
+  spam_keywords:
+    action: "quarantine"
+    manual_review: true
+
+  sensitive_topics:
+    action: "flag"
+    require_disclaimer: true

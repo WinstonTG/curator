@@ -14,7 +14,8 @@
     "type-check": "pnpm -r type-check",
     "check:metrics": "tsx analytics/guards/metric_integrity_check.ts",
     "generate:events": "pnpm -F @curator/scripts generate-events",
-    "connectors:sync": "tsx packages/connectors/src/cli.ts"
+    "connectors:sync": "tsx packages/connectors/src/cli.ts",
+    "quality:check": "tsx packages/quality/src/cli.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

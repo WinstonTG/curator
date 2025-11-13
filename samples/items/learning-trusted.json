@@ -1,0 +1,25 @@
+{
+  "id": "learning-001",
+  "domain": "learning",
+  "title": "Introduction to Machine Learning",
+  "description": "Learn the fundamentals of machine learning through hands-on programming exercises and real-world case studies. Covers supervised learning, neural networks, and practical applications.",
+  "url": "https://www.coursera.org/learn/machine-learning",
+  "source": {
+    "name": "Coursera",
+    "url": "https://www.coursera.org",
+    "reputation_score": 92
+  },
+  "topics": ["machine-learning", "ai", "programming", "computer-science"],
+  "published_at": "2024-12-01T00:00:00Z",
+  "sponsored": false,
+  "meta": {
+    "instructor": "Andrew Ng",
+    "institution": "Stanford University",
+    "duration_hours": 60,
+    "level": "beginner",
+    "rating": 4.9,
+    "enrollment_count": 500000,
+    "certificate": true,
+    "image_url": "https://example.com/ml-course.jpg"
+  }
+}

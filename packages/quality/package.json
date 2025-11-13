@@ -1,0 +1,25 @@
+{
+  "name": "@curator/quality",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Content quality rules engine with reputation scoring and blocklists",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "quality:check": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@curator/types": "workspace:*",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}

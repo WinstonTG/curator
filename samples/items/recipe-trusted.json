@@ -1,0 +1,30 @@
+{
+  "id": "recipe-001",
+  "domain": "recipes",
+  "title": "Classic Chocolate Chip Cookies",
+  "description": "Our test kitchen's award-winning chocolate chip cookie recipe, developed through 50+ iterations to achieve the perfect chewy center and crispy edges.",
+  "url": "https://www.seriouseats.com/chocolate-chip-cookies",
+  "source": {
+    "name": "Serious Eats",
+    "url": "https://www.seriouseats.com",
+    "reputation_score": 95
+  },
+  "topics": ["baking", "desserts", "cookies"],
+  "published_at": "2025-01-10T14:00:00Z",
+  "sponsored": false,
+  "meta": {
+    "prep_time": 15,
+    "cook_time": 12,
+    "servings": 24,
+    "difficulty": "easy",
+    "rating": 4.8,
+    "review_count": 2453,
+    "image_url": "https://example.com/cookies.jpg",
+    "nutrition": {
+      "calories": 180,
+      "protein": 2,
+      "carbs": 24,
+      "fat": 9
+    }
+  }
+}
