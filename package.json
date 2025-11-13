@@ -13,7 +13,8 @@
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check",
     "check:metrics": "tsx analytics/guards/metric_integrity_check.ts",
-    "generate:events": "pnpm -F @curator/scripts generate-events"
+    "generate:events": "pnpm -F @curator/scripts generate-events",
+    "connectors:sync": "tsx packages/connectors/src/cli.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

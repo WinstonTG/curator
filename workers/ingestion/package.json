@@ -1,0 +1,24 @@
+{
+  "name": "@curator/ingestion-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ETL ingestion worker with scheduling and retries",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/runner.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@curator/connectors": "workspace:*",
+    "@curator/types": "workspace:*",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}
