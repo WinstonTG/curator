@@ -4,3 +4,4 @@
  */
 
 export * from './item';
+export * from './preference';

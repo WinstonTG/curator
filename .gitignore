@@ -36,3 +36,4 @@ Thumbs.db
 
 # Synthetic data
 synthetic_events.json
+.env

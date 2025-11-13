@@ -10,10 +10,16 @@
     "type-check": "tsc --noEmit",
     "test": "echo 'No tests for types package' && exit 0"
   },
-  "keywords": ["curator", "types", "typescript"],
+  "keywords": [
+    "curator",
+    "types",
+    "typescript"
+  ],
   "author": "Curator Team",
   "license": "MIT",
   "devDependencies": {
+    "@prisma/client": "^6.19.0",
+    "prisma": "^6.19.0",
     "typescript": "^5.3.3"
   }
 }
