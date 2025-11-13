@@ -2,3 +2,4 @@ packages:
   - 'web'
   - 'scripts'
   - 'packages/*'
+  - 'workers/*'
