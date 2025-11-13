@@ -1,0 +1,189 @@
+{
+  "id": "550e8400-e29b-41d4-a716-446655440100",
+  "user_id": "550e8400-e29b-41d4-a716-446655440001",
+  "generated_at": "2025-11-12T06:00:00.000Z",
+  "expires_at": "2025-11-13T06:00:00.000Z",
+  "delivery_date": "2025-11-12",
+  "version": 1,
+  "personalization": {
+    "preference_vectors_used": [
+      "550e8400-e29b-41d4-a716-446655440101",
+      "550e8400-e29b-41d4-a716-446655440102",
+      "550e8400-e29b-41d4-a716-446655440103"
+    ],
+    "interests_matched": [
+      "550e8400-e29b-41d4-a716-446655440104",
+      "550e8400-e29b-41d4-a716-446655440105",
+      "550e8400-e29b-41d4-a716-446655440106",
+      "550e8400-e29b-41d4-a716-446655440107",
+      "550e8400-e29b-41d4-a716-446655440108"
+    ],
+    "constraints_applied": [
+      "550e8400-e29b-41d4-a716-446655440109",
+      "550e8400-e29b-41d4-a716-446655440110",
+      "550e8400-e29b-41d4-a716-446655440111"
+    ],
+    "diversity_score": 0.78,
+    "exploration_ratio": 0.25
+  },
+  "sections": [
+    {
+      "domain": "music",
+      "title": "Your Daily Electronic Mix",
+      "description": "Fresh electronic and jazz tracks curated for your morning",
+      "items": [
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440201",
+          "rank": 1,
+          "score": 0.94,
+          "reasons": [
+            "Matches your interest in Bonobo",
+            "Electronic genre you love",
+            "Upbeat mood for your morning"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440202",
+          "rank": 2,
+          "score": 0.89,
+          "reasons": [
+            "Similar to artists you've saved",
+            "Trending in electronic this week"
+          ],
+          "sponsored": false,
+          "explanation_type": "similarity"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440203",
+          "rank": 3,
+          "score": 0.82,
+          "reasons": [
+            "Matches your jazz interest",
+            "Added for variety"
+          ],
+          "sponsored": false,
+          "explanation_type": "diversity"
+        }
+      ],
+      "section_score": 0.88,
+      "item_count": 3
+    },
+    {
+      "domain": "news",
+      "title": "Today's Tech & Climate News",
+      "description": "Balanced coverage on AI and climate topics",
+      "items": [
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440204",
+          "rank": 1,
+          "score": 0.96,
+          "reasons": [
+            "Matches your strong interest in artificial intelligence",
+            "From a trusted technology publication",
+            "Center-balanced coverage you prefer"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440205",
+          "rank": 2,
+          "score": 0.87,
+          "reasons": [
+            "Matches your interest in climate change",
+            "Trending story today"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440206",
+          "rank": 3,
+          "score": 0.75,
+          "reasons": [
+            "Related to your technology interests",
+            "Popular in your reading history"
+          ],
+          "sponsored": true,
+          "explanation_type": "sponsored"
+        }
+      ],
+      "section_score": 0.86,
+      "item_count": 3
+    },
+    {
+      "domain": "recipes",
+      "title": "Vegetarian Italian Recipes",
+      "description": "Delicious Italian dishes that fit your dietary preferences",
+      "items": [
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440207",
+          "rank": 1,
+          "score": 0.91,
+          "reasons": [
+            "Matches your Italian cuisine interest",
+            "Vegetarian as you prefer",
+            "Quick 30-minute recipe"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440208",
+          "rank": 2,
+          "score": 0.84,
+          "reasons": [
+            "Italian cuisine you enjoy",
+            "Based on recipes you've tried before"
+          ],
+          "sponsored": false,
+          "explanation_type": "behavioral"
+        }
+      ],
+      "section_score": 0.875,
+      "item_count": 2
+    },
+    {
+      "domain": "learning",
+      "title": "Machine Learning Resources",
+      "description": "New courses and tutorials in ML and data viz",
+      "items": [
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440209",
+          "rank": 1,
+          "score": 0.93,
+          "reasons": [
+            "Matches your strong interest in machine learning",
+            "Highly rated by similar learners",
+            "Within your budget"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        },
+        {
+          "item_id": "550e8400-e29b-41d4-a716-446655440210",
+          "rank": 2,
+          "score": 0.85,
+          "reasons": [
+            "Matches your interest in data visualization",
+            "Complements your ML learning path"
+          ],
+          "sponsored": false,
+          "explanation_type": "interest_match"
+        }
+      ],
+      "section_score": 0.89,
+      "item_count": 2
+    }
+  ],
+  "metadata": {
+    "total_items": 10,
+    "domains_included": ["music", "news", "recipes", "learning"],
+    "generation_time_ms": 1247,
+    "ranker_version": "v1.2.3",
+    "has_sponsored": true,
+    "average_score": 0.876
+  }
+}

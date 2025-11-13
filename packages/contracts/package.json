@@ -1,0 +1,15 @@
+{
+  "name": "@curator/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Contract tests for Curator package schemas",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@curator/types": "workspace:*",
+    "vitest": "^1.1.0"
+  }
+}

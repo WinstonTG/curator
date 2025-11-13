@@ -70,7 +70,23 @@ importers:
         specifier: ^1.1.0
         version: 1.6.1(@types/node@20.19.25)
 
+  packages/contracts:
+    devDependencies:
+      '@curator/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^1.1.0
+        version: 1.6.1(@types/node@20.19.25)
+
   packages/types:
+    dependencies:
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.22.4
+        version: 3.24.6(zod@3.25.76)
     devDependencies:
       '@prisma/client':
         specifier: ^6.19.0

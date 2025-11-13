@@ -17,6 +17,10 @@
   ],
   "author": "Curator Team",
   "license": "MIT",
+  "dependencies": {
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.22.4"
+  },
   "devDependencies": {
     "@prisma/client": "^6.19.0",
     "prisma": "^6.19.0",
