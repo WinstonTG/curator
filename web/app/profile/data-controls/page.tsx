@@ -37,8 +37,10 @@ export default function DataControlsPage() {
     setExportStatus({ status: 'loading', message: 'Preparing your data export...' });
 
     try {
-      const response = await fetch('/api/data/export', {
-        method: 'POST',
+      // Use demo-user for now - in production, this would come from auth
+      const userId = 'demo-user';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/gdpr/export/${userId}`, {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -81,9 +83,11 @@ export default function DataControlsPage() {
     setDeleteStatus({ status: 'loading', message: 'Deleting your account...' });
 
     try {
-      const response = await fetch('/api/data/delete', {
-        method: 'POST',
+      const userId = 'demo-user';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/gdpr/delete/${userId}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: userId }),
       });
 
       if (!response.ok) {
