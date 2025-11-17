@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { InterestsStep } from './steps/InterestsStep';
 import { ConstraintsStep } from './steps/ConstraintsStep';
@@ -8,32 +9,50 @@ import { ConnectAccountsStep } from './steps/ConnectAccountsStep';
 import { CompletionStep } from './steps/CompletionStep';
 import { ProgressBar } from './components/ProgressBar';
 import { OnboardingData, Domain } from './types';
+import { getCurrentUser, type User } from '@/lib/auth';
 
 const STEPS = ['welcome', 'interests', 'constraints', 'connect', 'complete'] as const;
 type Step = typeof STEPS[number];
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
   const [sessionId, setSessionId] = useState<string>('');
-  const [userId, setUserId] = useState<string>('demo-user');
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     interests: [],
     constraints: [],
     connectedAccounts: [],
   });
 
-  // Track onboarding_started event
+  // Check authentication and track onboarding_started event
   useEffect(() => {
-    const newSessionId = `onboarding_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    setSessionId(newSessionId);
+    const init = async () => {
+      // Check if user is authenticated
+      const { user: currentUser, error } = await getCurrentUser();
 
-    // Send telemetry event
-    trackEvent('onboarding_started', {
-      session_id: newSessionId,
-      user_id: userId,
-      timestamp: new Date().toISOString(),
-    });
-  }, []);
+      if (!currentUser || error) {
+        // Redirect to auth page if not authenticated
+        router.push('/auth');
+        return;
+      }
+
+      setUser(currentUser);
+      setIsLoading(false);
+
+      // Track onboarding_started event
+      const newSessionId = `onboarding_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      setSessionId(newSessionId);
+
+      trackEvent('onboarding_started', {
+        session_id: newSessionId,
+        timestamp: new Date().toISOString(),
+      });
+    };
+
+    init();
+  }, [router]);
 
   const trackEvent = async (event: string, properties: Record<string, any>) => {
     try {
@@ -41,9 +60,9 @@ export default function OnboardingPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/analytics/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include auth cookie
         body: JSON.stringify({
           event,
-          user_id: userId,
           session_id: sessionId,
           properties,
           timestamp: new Date().toISOString(),
@@ -108,8 +127,8 @@ export default function OnboardingPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/onboarding/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include auth cookie
         body: JSON.stringify({
-          user_id: userId,
           interests: onboardingData.interests,
           constraints: onboardingData.constraints,
         }),
@@ -119,7 +138,6 @@ export default function OnboardingPage() {
         // Track completion event
         await trackEvent('onboarding_completed', {
           session_id: sessionId,
-          user_id: userId,
           timestamp: new Date().toISOString(),
           interests_count: onboardingData.interests.length,
           constraints_count: onboardingData.constraints.length,
@@ -137,6 +155,18 @@ export default function OnboardingPage() {
       alert('An error occurred. Please try again.');
     }
   };
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
@@ -180,10 +210,10 @@ export default function OnboardingPage() {
             />
           )}
 
-          {currentStep === 'complete' && (
+          {currentStep === 'complete' && user && (
             <CompletionStep
               data={onboardingData}
-              userId={userId}
+              userId={user.id}
             />
           )}
         </div>

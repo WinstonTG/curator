@@ -3,43 +3,22 @@
  * Handles profile creation and account connections during onboarding
  */
 
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router: Router = Router();
 
 // ========================================
 // POST /api/onboarding/profile
 // Save user interests and constraints from onboarding wizard
+// Requires authentication
 // ========================================
 
-router.post('/onboarding/profile', async (req: Request, res: Response) => {
+router.post('/onboarding/profile', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { user_id, interests, constraints } = req.body;
-
-    if (!user_id) {
-      return res.status(400).json({ error: 'user_id is required' });
-    }
-
-    // Ensure user exists (create if demo user)
-    let user = await prisma.user.findUnique({ where: { id: user_id } });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          id: user_id,
-          email: `${user_id}@example.com`,
-          display_name: user_id,
-          last_login: new Date(),
-        },
-      });
-    } else {
-      // Update last login
-      await prisma.user.update({
-        where: { id: user_id },
-        data: { last_login: new Date() },
-      });
-    }
+    const { interests, constraints } = req.body;
+    const user_id = req.userId!; // From requireAuth middleware
 
     // Create interests
     const createdInterests = [];
@@ -91,16 +70,13 @@ router.post('/onboarding/profile', async (req: Request, res: Response) => {
 // ========================================
 // POST /api/onboarding/connect/:provider
 // Stub for OAuth connection (e.g., Spotify, Google, GitHub)
+// Requires authentication
 // ========================================
 
-router.post('/onboarding/connect/:provider', async (req: Request, res: Response) => {
+router.post('/onboarding/connect/:provider', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { provider } = req.params;
-    const { user_id } = req.body;
-
-    if (!user_id) {
-      return res.status(400).json({ error: 'user_id is required' });
-    }
+    const user_id = req.userId!; // From requireAuth middleware
 
     // Stub: In production, this would initiate OAuth flow
     // For now, we'll just update the user's oauth_providers array

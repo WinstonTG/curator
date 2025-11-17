@@ -22,6 +22,7 @@ model User {
   email          String   @unique
   display_name   String
   avatar_url     String?
+  password_hash  String?  // Nullable for OAuth-only accounts
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
   last_login     DateTime?

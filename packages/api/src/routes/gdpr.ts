@@ -3,19 +3,21 @@
  * Handles user data export requests for GDPR compliance
  */
 
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router: Router = Router();
 
 // ========================================
-// GET /api/gdpr/export/:userId
+// GET /api/gdpr/export
 // Export all user data in JSON format (GDPR compliance)
+// Requires authentication - users can only export their own data
 // ========================================
 
-router.get('/gdpr/export/:userId', async (req: Request, res: Response) => {
+router.get('/gdpr/export', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.userId!; // From requireAuth middleware
 
     // Fetch all user data
     const [user, interests, constraints, vectors, interactions, analyticsEvents] = await Promise.all([
@@ -120,18 +122,19 @@ router.get('/gdpr/export/:userId', async (req: Request, res: Response) => {
 });
 
 // ========================================
-// DELETE /api/gdpr/delete/:userId
+// DELETE /api/gdpr/delete
 // Delete all user data (GDPR right to be forgotten)
+// Requires authentication - users can only delete their own account
 // ========================================
 
-router.delete('/gdpr/delete/:userId', async (req: Request, res: Response) => {
+router.delete('/gdpr/delete', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.userId!; // From requireAuth middleware
     const { confirm } = req.body;
 
-    if (confirm !== userId) {
+    if (confirm !== 'DELETE') {
       return res.status(400).json({
-        error: 'Confirmation required. Send { "confirm": "<userId>" } in request body',
+        error: 'Confirmation required. Send { "confirm": "DELETE" } in request body',
       });
     }
 

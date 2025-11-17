@@ -3,28 +3,33 @@
  * Handles telemetry event tracking
  */
 
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
+import { optionalAuth, AuthRequest } from '../middleware/auth';
 
 const router: Router = Router();
 
 // ========================================
 // POST /api/analytics/events
 // Track analytics events (onboarding_started, onboarding_completed, etc.)
+// Optional authentication - uses authenticated user ID if available
 // ========================================
 
-router.post('/analytics/events', async (req: Request, res: Response) => {
+router.post('/analytics/events', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { event, user_id, session_id, properties, timestamp } = req.body;
+    const { event, session_id, properties, timestamp } = req.body;
 
     if (!event) {
       return res.status(400).json({ error: 'event is required' });
     }
 
+    // Use authenticated user ID if available, otherwise null for anonymous tracking
+    const user_id = req.userId || null;
+
     const analyticsEvent = await prisma.analyticsEvent.create({
       data: {
         event,
-        user_id: user_id || null,
+        user_id,
         session_id: session_id || null,
         properties: properties || {},
         timestamp: timestamp ? new Date(timestamp) : new Date(),
